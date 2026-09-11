@@ -1,0 +1,37 @@
+REFERENCIA REAL DE LA PÁGINA CON TURNO DISPONIBLE
+=================================================
+Capturada el 11/09/2026.
+
+Estado sin disponibilidad
+--------------------------
+- El texto visible contiene: "Sin disponibilidad".
+- Todos los días futuros del calendario tienen la clase "disabled".
+- No hay horarios habilitados.
+
+Estado con disponibilidad
+-------------------------
+- Desaparece completamente el texto "Sin disponibilidad".
+- La fila de la sede tiene las clases: "selected info".
+- El radio de la sede puntoAtencion_0 sigue estando disabled. Por ello, este
+  radio NO debe utilizarse como única señal de disponibilidad.
+- La fecha disponible observada fue:
+    <td data-action="selectDay" data-day="09/10/2026" class="day active">9</td>
+- Aparece el encabezado:
+    "Elegí el horario para el viernes 9 de octubre de 2026"
+- Horarios observados:
+    09:30 -> disabled
+    10:30 -> disabled
+    11:30 -> habilitado
+- El horario usa:
+    <input name="horario" type="radio">
+  y no tiene atributo id.
+
+Reglas definitivas para el monitor V2
+--------------------------------------
+1. Validar primero que la sección "Paso 1 de 2" y "Elegí la sede" cargó.
+2. Si aparece "Sin disponibilidad", registrar SIN DISPONIBILIDAD.
+3. Si existe td.day[data-day] sin la clase disabled, registrar DISPONIBLE.
+4. Si existe input[name="horario"] habilitado, registrar DISPONIBLE y extraer
+   la hora desde el texto del elemento contenedor.
+5. Si la página cargó completa y desapareció "Sin disponibilidad", registrar
+   DISPONIBLE aunque el calendario todavía esté terminando de actualizarse.

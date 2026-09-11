@@ -1,0 +1,71 @@
+MONITOR DE TURNOS V2 - INSTALACIÓN INDEPENDIENTE
+=================================================
+
+Esta versión NO modifica ni detiene el monitor anterior.
+
+1. CREAR UN BOT NUEVO
+---------------------
+1. En Telegram abre @BotFather y envía /newbot.
+2. Crea un bot distinto y guarda su token de forma privada.
+3. Abre el bot nuevo, pulsa Iniciar y envíale Hola.
+4. Obtén el Chat ID mediante:
+   https://api.telegram.org//getUpdates
+5. No compartas el token ni capturas donde aparezca.
+
+2. CREAR UN REPOSITORIO NUEVO
+-----------------------------
+1. En GitHub crea un repositorio público llamado, por ejemplo:
+   monitor-turnos-roma-v2
+2. Descomprime GitHubMonitorTurnosV2.zip.
+3. Sube a la raíz solamente:
+   - monitor-v2.js
+   - package.json
+   - README.md
+   - INSTRUCCIONES-V2.txt
+4. Crea manualmente este archivo desde Add file -> Create new file:
+   .github/workflows/monitor-turnos-v2.yml
+5. Copia dentro todo el contenido del archivo local del mismo nombre.
+
+La estructura final debe ser:
+  .github/workflows/monitor-turnos-v2.yml
+  monitor-v2.js
+  package.json
+  README.md
+  INSTRUCCIONES-V2.txt
+
+3. GUARDAR LOS SECRETOS DEL BOT NUEVO
+--------------------------------------
+En Settings -> Secrets and variables -> Actions crea:
+  TELEGRAM_BOT_TOKEN = token del bot nuevo
+  TELEGRAM_CHAT_ID    = tu número de Chat ID
+
+4. PROBAR
+---------
+1. Ve a Actions -> Monitor de turnos V2 -> Run workflow.
+2. Debes recibir "BOT V2 CONECTADO".
+3. Cuando la ejecución termine en verde, envía /estado al bot nuevo.
+4. Espera hasta cinco minutos para la respuesta.
+
+COMANDOS
+--------
+/estado    Estado activo/pausado y última consulta.
+/ultima    Último resultado registrado.
+/historial Últimas 10 consultas con fecha y hora italiana.
+/pausar    Deja de consultar la web, pero sigue atendiendo comandos.
+/reanudar  Reactiva las consultas y realiza una nueva.
+
+REGISTRO
+--------
+Se conservan las últimas 30 consultas. El registro permanece aunque cada
+ejecución de GitHub use una máquina temporal. /historial muestra las últimas 10.
+
+DETECCIÓN
+---------
+La versión V2 no depende únicamente del texto "Sin disponibilidad". Comprueba:
+- si la sede puede seleccionarse;
+- celdas de fecha habilitadas con data-day;
+- controles de horarios habilitados.
+- si la página cargó completa y desapareció "Sin disponibilidad", también
+  confirma disponibilidad aunque el calendario tarde en mostrar controles.
+
+Los errores técnicos solo generan alerta después de tres fallos consecutivos.

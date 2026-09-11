@@ -1,0 +1,9 @@
+{
+  "name": "monitor-turnos-roma-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Monitor de turnos con Telegram, historial y control de pausa",
+  "dependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}
