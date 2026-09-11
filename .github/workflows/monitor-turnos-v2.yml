@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 concurrency:
   group: monitor-turnos-v2
@@ -27,6 +26,14 @@ jobs:
       - name: Descargar el monitor V2
         uses: actions/checkout@v4
 
+      - name: Recuperar historial y estado
+        uses: actions/cache/restore@v4
+        with:
+          path: .monitor-state
+          key: monitor-state-v2-${{ github.run_id }}
+          restore-keys: |
+            monitor-state-v2-
+
       - name: Preparar Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,8 +44,14 @@ jobs:
 
       - name: Consultar la web y atender comandos
         env:
-          GH_TOKEN: ${{ github.token }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ENVIAR_PRUEBA: ${{ github.event_name == 'workflow_dispatch' && inputs.enviar_prueba }}
         run: node monitor-v2.js
+
+      - name: Guardar historial y estado
+        if: ${{ success() }}
+        uses: actions/cache/save@v4
+        with:
+          path: .monitor-state
+          key: monitor-state-v2-${{ github.run_id }}
