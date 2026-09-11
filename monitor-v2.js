@@ -1,12 +1,11 @@
 const { chromium } = require("playwright-core");
+const fs = require("fs");
 
 const URL_TURNOS =
   "https://turnos.argentina.gob.ar/turnos/seleccionTurno/3219/pais/37/prov/67/loc/2875/pda/3616";
-const API_GITHUB = `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}`;
-const VARIABLE_ESTADO = "MONITOR_STATE_V2";
+const ARCHIVO_ESTADO = ".monitor-state/state.json";
 const tokenTelegram = process.env.TELEGRAM_BOT_TOKEN;
 const chatAutorizado = process.env.TELEGRAM_CHAT_ID;
-const tokenGitHub = process.env.GH_TOKEN;
 
 function ahora() {
   return new Date().toISOString();
@@ -34,27 +33,12 @@ function estadoInicial() {
   };
 }
 
-async function github(ruta, opciones = {}) {
-  const respuesta = await fetch(`${API_GITHUB}${ruta}`, {
-    ...opciones,
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${tokenGitHub}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Content-Type": "application/json",
-      ...(opciones.headers || {}),
-    },
-  });
-  return respuesta;
-}
-
 async function cargarEstado() {
-  const respuesta = await github(`/actions/variables/${VARIABLE_ESTADO}`);
-  if (respuesta.status === 404) return estadoInicial();
-  if (!respuesta.ok) throw new Error(`No se pudo leer el estado de GitHub (${respuesta.status}).`);
-  const datos = await respuesta.json();
   try {
-    return { ...estadoInicial(), ...JSON.parse(datos.value) };
+    return {
+      ...estadoInicial(),
+      ...JSON.parse(fs.readFileSync(ARCHIVO_ESTADO, "utf8")),
+    };
   } catch (_) {
     return estadoInicial();
   }
@@ -62,21 +46,8 @@ async function cargarEstado() {
 
 async function guardarEstado(estado) {
   estado.historial = (estado.historial || []).slice(-30);
-  const value = JSON.stringify(estado);
-  let respuesta = await github(`/actions/variables/${VARIABLE_ESTADO}`, {
-    method: "PATCH",
-    body: JSON.stringify({ name: VARIABLE_ESTADO, value }),
-  });
-  if (respuesta.status === 404) {
-    respuesta = await github("/actions/variables", {
-      method: "POST",
-      body: JSON.stringify({ name: VARIABLE_ESTADO, value }),
-    });
-  }
-  if (!respuesta.ok) {
-    const texto = await respuesta.text();
-    throw new Error(`No se pudo guardar el estado (${respuesta.status}): ${texto}`);
-  }
+  fs.mkdirSync(".monitor-state", { recursive: true });
+  fs.writeFileSync(ARCHIVO_ESTADO, JSON.stringify(estado, null, 2), "utf8");
 }
 
 async function enviarTelegram(texto) {
@@ -240,8 +211,8 @@ async function consultarWeb() {
 }
 
 async function ejecutar() {
-  if (!tokenTelegram || !chatAutorizado || !tokenGitHub || !process.env.GITHUB_REPOSITORY) {
-    throw new Error("Falta la configuración de Telegram o GitHub.");
+  if (!tokenTelegram || !chatAutorizado) {
+    throw new Error("Falta la configuración de Telegram.");
   }
 
   const estado = await cargarEstado();
