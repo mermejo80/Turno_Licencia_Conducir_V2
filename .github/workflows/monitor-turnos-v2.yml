@@ -1,0 +1,44 @@
+name: Monitor de turnos V2
+
+on:
+  schedule:
+    - cron: "1/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      enviar_prueba:
+        description: "Enviar mensaje de prueba del bot V2"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: monitor-turnos-v2
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Descargar el monitor V2
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Instalar el navegador automatizado
+        run: npm install --omit=dev
+
+      - name: Consultar la web y atender comandos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ENVIAR_PRUEBA: ${{ github.event_name == 'workflow_dispatch' && inputs.enviar_prueba }}
+        run: node monitor-v2.js
