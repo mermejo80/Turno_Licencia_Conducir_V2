@@ -1,8 +1,6 @@
 name: Monitor de turnos V2
 
 on:
-  schedule:
-    - cron: "1/5 * * * *"
   workflow_dispatch:
     inputs:
       enviar_prueba:
